@@ -26,7 +26,7 @@ public class ProductDTO {
     private String name;
 
     @Min(value = 0,message = "Price must be greater than orr equal to 0")
-    @Max(value = 10000000, message = "Price must be greater than or equal to")
+    @Max(value = 10000000, message = "Price must be greater than or equal to 10,000,000")
     private Float price;
 
     private String thumbnail;
@@ -34,7 +34,7 @@ public class ProductDTO {
     private String description;
 
     @JsonProperty("category_id")
-    private String categoryId;
+    private Long categoryId;
 
     private List<MultipartFile> files;
 

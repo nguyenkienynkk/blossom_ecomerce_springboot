@@ -1,9 +1,11 @@
 package com.ngkk.webapp_springboot.repositories;
 
-import com.ngkk.webapp_springboot.models.Category;
+import com.ngkk.webapp_springboot.models.OrderDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface CategoryRepository extends JpaRepository<Category,Long> {
+public interface OrderDetailRepository extends JpaRepository<OrderDetail,Long> {
 }

@@ -19,8 +19,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@Table(name = "categories")
-public class Category {
+@Table(name = "roles")
+public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
