@@ -1,7 +1,12 @@
 package com.ngkk.webapp_springboot.controllers;
 
 import com.ngkk.webapp_springboot.dtos.OrderDTO;
+import com.ngkk.webapp_springboot.responses.OrderResponse;
+import com.ngkk.webapp_springboot.services.OrderService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -18,7 +23,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("${api.prefix}/orders")
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
 public class OrderController {
+    OrderService orderService;
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody @Valid OrderDTO orderDTO, BindingResult result) {
         try {
@@ -29,7 +37,8 @@ public class OrderController {
                         .toList();
                 return ResponseEntity.badRequest().body(errorMs);
             }
-            return ResponseEntity.ok("This is createOrder is successfully");
+           OrderResponse orderResponse =  orderService.createOrder(orderDTO);
+            return ResponseEntity.ok(orderResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

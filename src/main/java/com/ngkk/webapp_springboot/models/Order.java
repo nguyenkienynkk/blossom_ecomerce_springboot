@@ -25,7 +25,7 @@ import java.util.Date;
 @Setter
 @Builder
 @Table(name = "orders")
-public class Order extends AbstractEntity{
+public class Order{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,7 +57,7 @@ public class Order extends AbstractEntity{
     private String status;
 
     @Column(name = "total_money")
-    private Integer totalMoney;
+    private Float totalMoney;
 
     @Column(name = "shipping_method")
     private String shippingMethod;
