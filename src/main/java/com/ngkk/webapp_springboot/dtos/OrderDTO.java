@@ -52,9 +52,6 @@ public class OrderDTO {
     @JsonProperty("shipping_date")
     private LocalDate shippingDate;
 
-    @JsonProperty("tracking_number")
-    private String trackingNumber;
-
     @JsonProperty("payment_method")
     private String paymentMethod;
 

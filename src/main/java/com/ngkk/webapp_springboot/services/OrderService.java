@@ -7,15 +7,12 @@ import com.ngkk.webapp_springboot.models.OrderStatus;
 import com.ngkk.webapp_springboot.models.User;
 import com.ngkk.webapp_springboot.repositories.OrderRepository;
 import com.ngkk.webapp_springboot.repositories.UserRepository;
-import com.ngkk.webapp_springboot.responses.OrderResponse;
 import com.ngkk.webapp_springboot.services.impl.IOrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.ModelMap;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -30,7 +27,7 @@ public class OrderService implements IOrderService {
     ModelMapper modelMapper;
 
     @Override
-    public OrderResponse createOrder(OrderDTO orderDTO) throws Exception {
+    public Order createOrder(OrderDTO orderDTO) throws Exception {
         //tìm xem user id đó có tồn tại hay không
         User user = userRepository.findById(orderDTO.getUserId())
                 .orElseThrow(() -> new DataNotFoundException("Cannot find user with id:" + orderDTO));
@@ -49,26 +46,38 @@ public class OrderService implements IOrderService {
         order.setShippingDate(shippingDate);
         order.setActive(true);
         orderRepository.save(order);
-        return modelMapper.map(order, OrderResponse.class);
+        return order;
     }
 
     @Override
-    public OrderResponse getOrder(Long id) {
-        return null;
+    public Order getOrder(Long id) {
+        return orderRepository.findById(id).orElse(null);
     }
 
     @Override
-    public OrderResponse updateOrder(Long id, OrderDTO orderDTO) {
-        return null;
+    public Order updateOrder(Long id, OrderDTO orderDTO) throws DataNotFoundException {
+        Order order = orderRepository.findById(id).orElseThrow(() ->
+                new DataNotFoundException("Can not find Order with id " + id));
+        User existingUser = userRepository.findById(orderDTO.getUserId()).orElseThrow(() ->
+                new DataNotFoundException("Can not find user with id " + orderDTO.getUserId()));
+        modelMapper.typeMap(OrderDTO.class, Order.class)
+                .addMappings(mapper -> mapper.skip(Order::setId));
+        modelMapper.map(orderDTO, order);
+        order.setUser(existingUser);
+        return orderRepository.save(order);
     }
 
     @Override
     public void deleteOrder(Long id) {
-
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order != null) {
+            order.setActive(false);
+            orderRepository.save(order);
+        }
     }
 
     @Override
-    public List<OrderResponse> getAllOrders(Long userId) {
-        return null;
+    public List<Order> findByOrderId(Long userId) {
+        return orderRepository.findByUserId(userId);
     }
 }
