@@ -21,3 +21,6 @@ spring:
 
 api:
   prefix: api/v1
+jwt:
+  expiration: 2592000
+  secret_key: cHU3NW9kYTI2aGh3em04ODZ0MDBidHQzamczZ2MxMDg1Y2Jsb250NGd4bjlwa240eDl1dmxxaGptdzU4aHQ0bnFhMzJ1bHd6d3R6ZDdtamdqczNycXM2bXZ0ZmNkYjA1czFhZ240ZnA4Y2hsMmlzMmpvZGRmZ3J2ZGZ4dG52Zjk

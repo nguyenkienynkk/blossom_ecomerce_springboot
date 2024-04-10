@@ -1,6 +1,7 @@
 package com.ngkk.webapp_springboot.controllers;
 
 import com.ngkk.webapp_springboot.dtos.UserLoginDTO;
+import com.ngkk.webapp_springboot.models.User;
 import com.ngkk.webapp_springboot.services.UserService;
 import com.ngkk.webapp_springboot.services.impl.IUserService;
 import jakarta.validation.Valid;
@@ -38,18 +39,22 @@ public class UserController {
             if (!userDTO.getPassword().equals(userDTO.getRetypePassword())) {
                 return ResponseEntity.badRequest().body("Retype password is not same as password");
             }
-            userService.createUser(userDTO);
-            return ResponseEntity.ok("Register successfully");
+           User user = userService.createUser(userDTO);
+            return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@Valid @RequestBody UserLoginDTO userDTO) {
+    public ResponseEntity<?> loginUser(@Valid @RequestBody UserLoginDTO userDTO){
         //Kiểm tra thông tin đăng nhập và sinh token
-        String token = userService.login(userDTO.getPhoneNumber(),userDTO.getPassword());
-        return ResponseEntity.ok(token);
+        try {
+            String token = userService.login(userDTO.getPhoneNumber(),userDTO.getPassword());
+            return ResponseEntity.ok(token);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
 
