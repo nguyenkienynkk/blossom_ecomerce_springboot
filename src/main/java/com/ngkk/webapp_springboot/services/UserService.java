@@ -3,6 +3,7 @@ package com.ngkk.webapp_springboot.services;
 import com.ngkk.webapp_springboot.components.JwtTokenUtil;
 import com.ngkk.webapp_springboot.dtos.UserDTO;
 import com.ngkk.webapp_springboot.exceptions.DataNotFoundException;
+import com.ngkk.webapp_springboot.exceptions.PermissionDenyException;
 import com.ngkk.webapp_springboot.models.Role;
 import com.ngkk.webapp_springboot.models.User;
 import com.ngkk.webapp_springboot.repositories.RoleRepository;
@@ -31,12 +32,19 @@ public class UserService implements IUserService {
     AuthenticationManager authenticationManager;
 
     @Override
-    public User createUser(UserDTO userDTO) throws DataNotFoundException {
+    public User createUser(UserDTO userDTO) throws Exception {
         //register the user
         String phoneNumber = userDTO.getPhoneNumber();
         //Kiểm tra xem số điện thoại đã tồn tại hay chưa
         if (userRepository.existsByPhoneNumber(phoneNumber))
             throw new DataIntegrityViolationException("Phone number already exists");
+
+        Role role = roleRepository.findById(userDTO.getRoleId())
+                .orElseThrow(() -> new DataNotFoundException("Role not found"));
+
+        if (role.getName().toUpperCase().equals(Role.ADMIN))
+            throw new PermissionDenyException("You cannot register an admin account");
+
         //convert from userDTO => user
         User newUser = User.builder()
                 .fullName(userDTO.getFullName())
@@ -47,8 +55,6 @@ public class UserService implements IUserService {
                 .facebookAccountId(userDTO.getFacebookAccountId())
                 .googleAccountId(userDTO.getGoogleAccountId())
                 .build();
-        Role role = roleRepository.findById(userDTO.getRoleId())
-                .orElseThrow(() -> new DataNotFoundException("Role not found"));
         newUser.setRole(role);
         //Kiểm tra nếu có accountId, không yêu cầu password
         if (userDTO.getFacebookAccountId() == 0 && userDTO.getGoogleAccountId() == 0) {
