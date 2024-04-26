@@ -1,12 +1,18 @@
 package com.ngkk.webapp_springboot.controllers;
 
+import com.ngkk.webapp_springboot.components.LocalizationUtils;
 import com.ngkk.webapp_springboot.dtos.CategoryDTO;
 import com.ngkk.webapp_springboot.models.Category;
+import com.ngkk.webapp_springboot.responses.CategoryResponse;
+import com.ngkk.webapp_springboot.responses.UpdateCategoryResponse;
 import com.ngkk.webapp_springboot.services.CategoryService;
+import com.ngkk.webapp_springboot.utils.MessageKeys;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -19,29 +25,37 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.LocaleResolver;
 
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("${api.prefix}/categories") //api/v1
 //Dependcies Injection
-@FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class CategoryController {
     CategoryService categoryService;
+    LocalizationUtils localizationUtils;
+
     //http://localhost:8088/api/v1/categories?page=1&limit=10
     @PostMapping
     //Nếu tham số truyền vào là 1 object thì sao ? => Data Transfer Object = Request Object
-    public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
+    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
+        CategoryResponse categoryResponse = new CategoryResponse();
         if (result.hasErrors()) {
             List<String> errorMs = result.getFieldErrors()
                     .stream()
                     .map(FieldError::getDefaultMessage)
                     .toList();
-            return ResponseEntity.badRequest().body(errorMs);
+            categoryResponse.setMessage(localizationUtils.getLocalizedMessage(MessageKeys.INSERT_CATEGORY_FAILED));
+            categoryResponse.setErrors(errorMs);
+            return ResponseEntity.badRequest().body(categoryResponse);
         }
-        categoryService.createCategory(categoryDTO);
-        return ResponseEntity.ok("Insert category successfully");
+        Category category = categoryService.createCategory(categoryDTO);
+        categoryResponse.setCategory(category);
+        return ResponseEntity.ok(categoryResponse);
     }
 
     @GetMapping
@@ -55,45 +69,18 @@ public class CategoryController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateCategory(@PathVariable Long id,@RequestBody CategoryDTO categoryDTO) {
+    public ResponseEntity<UpdateCategoryResponse> updateCategory(@PathVariable Long id,
+                                                                 @RequestBody CategoryDTO categoryDTO) {
+        UpdateCategoryResponse updateCategoryResponse = new UpdateCategoryResponse();
         categoryService.updateCategory(id, categoryDTO);
-        return ResponseEntity.ok("Update category successfully");
+        updateCategoryResponse.setMessage(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_CATEGORY_SUCCESSFULLY));
+        return ResponseEntity.ok(updateCategoryResponse);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return ResponseEntity.ok("Delete categories with id = " + id);
+        return ResponseEntity.ok(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_CATEGORY_SUCCESSFULLY));
     }
 
-//    @GetMapping
-//    public ResponseEntity<String> getAllCategories(
-//            @RequestParam("page")     int page,
-//            @RequestParam("limit")    int limit
-//    ) {
-//        return ResponseEntity.ok(String.format("getAllCategories, page = %d, limit = %d", page, limit));
-//    }
-//    @PostMapping
-//    //Nếu tham số truyền vào là 1 object thì sao ? => Data Transfer Object = Request Object
-//    public ResponseEntity<?> insertCategory(
-//            @Valid @RequestBody CategoryDTO categoryDTO,
-//            BindingResult result) {
-//        if(result.hasErrors()) {
-//            List<String> errorMessages = result.getFieldErrors()
-//                    .stream()
-//                    .map(FieldError::getDefaultMessage)
-//                    .toList();
-//            return ResponseEntity.badRequest().body(errorMessages);
-//        }
-//        return ResponseEntity.ok("This is insertCategory"+categoryDTO);
-//
-//    }
-//    @PutMapping("/{id}")
-//    public ResponseEntity<String> updateCategory(@PathVariable Long id) {
-//        return ResponseEntity.ok("insertCategory with id = "+id);
-//    }
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
-//        return ResponseEntity.ok("deleteCategory with id = "+id);
-//    }
 }

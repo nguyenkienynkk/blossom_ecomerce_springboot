@@ -1,5 +1,6 @@
 package com.ngkk.webapp_springboot.controllers;
 
+import com.ngkk.webapp_springboot.components.LocalizationUtils;
 import com.ngkk.webapp_springboot.dtos.ProductDTO;
 import com.ngkk.webapp_springboot.dtos.ProductImageDTO;
 import com.ngkk.webapp_springboot.exceptions.DataNotFoundException;
@@ -8,6 +9,7 @@ import com.ngkk.webapp_springboot.models.ProductImage;
 import com.ngkk.webapp_springboot.responses.ProductListResponse;
 import com.ngkk.webapp_springboot.responses.ProductResponse;
 import com.ngkk.webapp_springboot.services.impl.IProductService;
+import com.ngkk.webapp_springboot.utils.MessageKeys;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -51,6 +53,7 @@ import java.util.UUID;
 @MultipartConfig
 public class ProductController {
     IProductService productService;
+    LocalizationUtils localizationUtils;
 
     @PostMapping("")
     //POST http://localhost:8088/v1/api/products
@@ -90,7 +93,8 @@ public class ProductController {
                 return ResponseEntity.badRequest().body("No images were uploaded");
             }
             if (files.size() >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
-                return ResponseEntity.badRequest().body("You can only upload maximum of " + ProductImage.MAXIMUM_IMAGES_PER_PRODUCT + " images");
+                return ResponseEntity.badRequest().body(localizationUtils
+                        .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_MAX_5));
             }
             for (MultipartFile file : files) {
                 if (file.getSize() == 0) {
@@ -98,12 +102,15 @@ public class ProductController {
                 }
                 if (file != null) {
                     if (file.getSize() > 10 * 1024 * 1024) {
-                        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File is too large, Maximum 10MB");
+                        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                                .body(localizationUtils.getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_LARGE));
                     }
                     //Xem co phai dinh dang file anh khong
                     String contentType = file.getContentType();
                     if (contentType == null || !contentType.startsWith("image/")) {
-                        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("File must be an image");
+                        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                                .body(localizationUtils
+                                        .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_MUST_BE_IMAGE));
                     }
                     //Lưu file và cập nhaajt thumbnail trong DTO
                     String fileName = storeFile(file); //Thay thế hàm này với code của bạn để lưu file
@@ -181,11 +188,12 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable("id") Long id) {
         try {
             productService.deleteProduct(id);
-            return ResponseEntity.ok(String.format("Product %s deleted successfully", id));
+            return ResponseEntity.ok(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_PRODUCT_SUCCESSFULLY));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,

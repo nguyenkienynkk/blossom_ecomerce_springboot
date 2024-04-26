@@ -1,6 +1,6 @@
 package com.ngkk.webapp_springboot.services;
 
-import com.ngkk.webapp_springboot.components.JwtTokenUtil;
+import com.ngkk.webapp_springboot.components.JwtTokenUtils;
 import com.ngkk.webapp_springboot.dtos.UserDTO;
 import com.ngkk.webapp_springboot.exceptions.DataNotFoundException;
 import com.ngkk.webapp_springboot.exceptions.PermissionDenyException;
@@ -28,7 +28,7 @@ public class UserService implements IUserService {
     UserRepository userRepository;
     RoleRepository roleRepository;
     PasswordEncoder passwordEncoder;
-    JwtTokenUtil jwtTokenUtil;
+    JwtTokenUtils jwtTokenUtil;
     AuthenticationManager authenticationManager;
 
     @Override

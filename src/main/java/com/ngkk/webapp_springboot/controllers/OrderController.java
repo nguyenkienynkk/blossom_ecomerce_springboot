@@ -1,8 +1,10 @@
 package com.ngkk.webapp_springboot.controllers;
 
+import com.ngkk.webapp_springboot.components.LocalizationUtils;
 import com.ngkk.webapp_springboot.dtos.OrderDTO;
 import com.ngkk.webapp_springboot.models.Order;
 import com.ngkk.webapp_springboot.services.OrderService;
+import com.ngkk.webapp_springboot.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderController {
     OrderService orderService;
+    LocalizationUtils localizationUtils;
 
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody @Valid OrderDTO orderDTO, BindingResult result) {
@@ -82,7 +85,6 @@ public class OrderController {
     public ResponseEntity<?> deleteOrder(@Valid @PathVariable("id") Long id) {
         //xóa mềm => cập nhật trường active = false
         orderService.deleteOrder(id);
-        return ResponseEntity.ok("This is deleteOrder with id = " + id);
+        return ResponseEntity.ok(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_ORDER_SUCCESSFULLY));
     }
-
 }

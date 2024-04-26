@@ -1,11 +1,13 @@
 package com.ngkk.webapp_springboot.controllers;
 
+import com.ngkk.webapp_springboot.components.LocalizationUtils;
 import com.ngkk.webapp_springboot.dtos.OrderDetailDTO;
 import com.ngkk.webapp_springboot.exceptions.DataNotFoundException;
 import com.ngkk.webapp_springboot.models.OrderDetail;
 import com.ngkk.webapp_springboot.responses.OrderDetailResponse;
 import com.ngkk.webapp_springboot.responses.OrderResponse;
 import com.ngkk.webapp_springboot.services.OrderDetailService;
+import com.ngkk.webapp_springboot.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderDetailController {
     OrderDetailService orderDetailService;
+    LocalizationUtils localizationUtils;
 
     @PostMapping
     public ResponseEntity<?> createOrderDetail(@Valid @RequestBody OrderDetailDTO orderDetailDTO) {
@@ -62,7 +65,6 @@ public class OrderDetailController {
         try {
             OrderDetail orderDetail = orderDetailService.updateOrderDetail(id, orderDetailDTO);
             return ResponseEntity.ok().body(orderDetail);
-
         } catch (DataNotFoundException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -71,7 +73,9 @@ public class OrderDetailController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrderDetail(@Valid @PathVariable("id") Long id) {
         orderDetailService.deleteOrderDetail(id);
-        return ResponseEntity.ok().body("Delete successful with id = " + id);
+        return ResponseEntity.ok().body(
+                localizationUtils
+                        .getLocalizedMessage(MessageKeys.DELETE_ORDER_DETAIL_SUCCESSFULLY));
     }
 
 }
