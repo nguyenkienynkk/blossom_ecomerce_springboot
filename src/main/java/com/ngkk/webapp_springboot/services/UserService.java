@@ -1,6 +1,7 @@
 package com.ngkk.webapp_springboot.services;
 
 import com.ngkk.webapp_springboot.components.JwtTokenUtils;
+import com.ngkk.webapp_springboot.components.LocalizationUtils;
 import com.ngkk.webapp_springboot.dtos.UserDTO;
 import com.ngkk.webapp_springboot.exceptions.DataNotFoundException;
 import com.ngkk.webapp_springboot.exceptions.PermissionDenyException;
@@ -9,6 +10,7 @@ import com.ngkk.webapp_springboot.models.User;
 import com.ngkk.webapp_springboot.repositories.RoleRepository;
 import com.ngkk.webapp_springboot.repositories.UserRepository;
 import com.ngkk.webapp_springboot.services.impl.IUserService;
+import com.ngkk.webapp_springboot.utils.MessageKeys;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,6 +32,7 @@ public class UserService implements IUserService {
     PasswordEncoder passwordEncoder;
     JwtTokenUtils jwtTokenUtil;
     AuthenticationManager authenticationManager;
+    LocalizationUtils localizationUtils;
 
     @Override
     public User createUser(UserDTO userDTO) throws Exception {
@@ -66,10 +69,10 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public String login(String phoneNumber, String password) throws Exception {
+    public String login(String phoneNumber, String password,Long roleId) throws Exception {
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
-            throw new DataNotFoundException("Invalid phone number/password: ");
+            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
         }
         User existingUser = optionalUser.get();
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
@@ -79,8 +82,12 @@ public class UserService implements IUserService {
         );
         if (existingUser.getFacebookAccountId() == 0 && existingUser.getGoogleAccountId() == 0) {
             if(!passwordEncoder.matches(password, existingUser.getPassword())) {
-                throw new BadCredentialsException("Wrong phone number or password");
+                throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
             }
+        }
+        Optional<Role> optionalRole = roleRepository.findById(roleId);
+        if (optionalRole.isEmpty() || !roleId.equals(existingUser.getRole().getId())) {
+            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS));
         }
         authenticationManager.authenticate(authenticationToken);
         return jwtTokenUtil.generateToken(existingUser);

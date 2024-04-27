@@ -68,7 +68,11 @@ public class UserController {
     public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody UserLoginDTO userDTO) {
         //Kiểm tra thông tin đăng nhập và sinh token
         try {
-            String token = userService.login(userDTO.getPhoneNumber(), userDTO.getPassword());
+            String token = userService.login(
+                    userDTO.getPhoneNumber(),
+                    userDTO.getPassword(),
+                    userDTO.getRoleId()
+            );
             return ResponseEntity.ok(LoginResponse.builder()
                     .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
                     .token(token)
