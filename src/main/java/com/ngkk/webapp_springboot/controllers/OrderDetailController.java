@@ -5,7 +5,6 @@ import com.ngkk.webapp_springboot.dtos.OrderDetailDTO;
 import com.ngkk.webapp_springboot.exceptions.DataNotFoundException;
 import com.ngkk.webapp_springboot.models.OrderDetail;
 import com.ngkk.webapp_springboot.responses.OrderDetailResponse;
-import com.ngkk.webapp_springboot.responses.OrderResponse;
 import com.ngkk.webapp_springboot.services.OrderDetailService;
 import com.ngkk.webapp_springboot.utils.MessageKeys;
 import jakarta.validation.Valid;

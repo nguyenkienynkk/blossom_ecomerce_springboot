@@ -1,5 +1,6 @@
 package com.ngkk.webapp_springboot.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ngkk.webapp_springboot.models.Product;
 import jakarta.validation.constraints.Max;
@@ -17,6 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductResponse extends BaseResponse{
 
     private String name;

@@ -79,11 +79,15 @@ public class ProductController {
     }
 
     @PostMapping(value = "uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadImage(@ModelAttribute("files") List<MultipartFile> files, @PathVariable("id") Long productId) throws Exception {
-        List<ProductImage> productImages = new ArrayList<>();
+    public ResponseEntity<?> uploadImages(@ModelAttribute("files") List<MultipartFile> files,
+                                          @PathVariable("id") Long productId) throws Exception {
         try {
             Product existingProduct = productService.getProductById(productId);
             files = files == null ? new ArrayList<MultipartFile>() : files;
+            if (files.size() >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
+                return ResponseEntity.badRequest().body(localizationUtils
+                        .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_MAX_5));
+            }
             boolean anyFileUploaded = false;
             for (MultipartFile file : files) {
                 if (file != null && file.getSize() > 0) {
@@ -94,39 +98,34 @@ public class ProductController {
             if (!anyFileUploaded) {
                 return ResponseEntity.badRequest().body("No images were uploaded");
             }
-            if (files.size() >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
-                return ResponseEntity.badRequest().body(localizationUtils
-                        .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_MAX_5));
-            }
+
+            List<ProductImage> productImages = new ArrayList<>();
             for (MultipartFile file : files) {
                 if (file.getSize() == 0) {
                     continue;
                 }
-                if (file != null) {
-                    if (file.getSize() > 10 * 1024 * 1024) {
-                        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                                .body(localizationUtils.getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_LARGE));
-                    }
-                    //Xem co phai dinh dang file anh khong
-                    String contentType = file.getContentType();
-                    if (contentType == null || !contentType.startsWith("image/")) {
-                        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                                .body(localizationUtils
-                                        .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_MUST_BE_IMAGE));
-                    }
-                    //Lưu file và cập nhaajt thumbnail trong DTO
-                    String fileName = storeFile(file); //Thay thế hàm này với code của bạn để lưu file
-                    ProductImage productImage = productService.createProductImage(
-                            existingProduct.getId(),
-                            ProductImageDTO.builder()
-                                    .imageUrl(fileName)
-                                    .build());
-                    productImages.add(productImage);
-
-                    //lưu vào product image
-                    //lưu vào đối tượng product trong DB
+                // Kiểm tra kích thước file và định dạng
+                if (file.getSize() > 10 * 1024 * 1024) { // Kích thước > 10MB
+                    return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                            .body(localizationUtils
+                                    .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_LARGE));
                 }
-
+                String contentType = file.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                            .body(localizationUtils
+                                    .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_MUST_BE_IMAGE));
+                }
+                // Lưu file và cập nhật thumbnail trong DTO
+                String filename = storeFile(file); // Thay thế hàm này với code của bạn để lưu file
+                //lưu vào đối tượng product trong DB
+                ProductImage productImage = productService.createProductImage(
+                        existingProduct.getId(),
+                        ProductImageDTO.builder()
+                                .imageUrl(filename)
+                                .build()
+                );
+                productImages.add(productImage);
             }
             return ResponseEntity.ok().body(productImages);
         } catch (DataNotFoundException e) {
@@ -134,16 +133,17 @@ public class ProductController {
         }
 
     }
+
     @GetMapping("/images/{imageName}")
     public ResponseEntity<?> viewImage(@PathVariable String imageName) {
         try {
-            Path imagePath = Paths.get("uploads/"+imageName); //lấy đường dẫn ở /uploads
-            UrlResource resource  = new UrlResource(imagePath.toUri()); //lấy uri của resource
+            Path imagePath = Paths.get("uploads/" + imageName); //lấy đường dẫn ở /uploads
+            UrlResource resource = new UrlResource(imagePath.toUri()); //lấy uri của resource
             if (resource.exists()) {
                 return ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_JPEG)
                         .body(resource);
-            }else {
+            } else {
                 return ResponseEntity.notFound().build();
             }
         } catch (MalformedURLException e) {
@@ -176,7 +176,8 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<ProductListResponse> getProducts(@RequestParam("page") int page, @RequestParam("limit") int limit) {
+    public ResponseEntity<ProductListResponse> getProducts(
+            @RequestParam("page") int page, @RequestParam("limit") int limit) {
         //Tạo pageable từ thông tin trang và giới hạn
         PageRequest pageRequest = PageRequest.of(
                 page, limit, Sort.by("createdAt").descending());
