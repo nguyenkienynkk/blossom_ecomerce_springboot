@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 public interface IProductService {
     Product createProduct(ProductDTO productDTO) throws Exception;
     Product getProductById(Long id) throws DataNotFoundException;
-    Page<ProductResponse> getAllProducts(PageRequest pageRequest);
+    Page<ProductResponse> getAllProducts(String keyword, Long categoryId, PageRequest pageRequest);
     Product updateProduct(Long id, ProductDTO productDTO) throws DataNotFoundException;
     void deleteProduct(Long id);
     boolean existsByName(String name);
-    public ProductImage createProductImage(Long productId, ProductImageDTO productImageDTO) throws Exception;
+     ProductImage createProductImage(Long productId, ProductImageDTO productImageDTO) throws Exception;
 }
