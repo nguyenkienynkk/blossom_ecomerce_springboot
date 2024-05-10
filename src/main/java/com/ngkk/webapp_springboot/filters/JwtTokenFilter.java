@@ -45,26 +45,26 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response); //enable by pass
                 return;
             }
-                final String authHeader = request.getHeader("Authorization");
-            if (authHeader == null || !authHeader.startsWith("Bearer ")){
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"Unauthorized");
+            final String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 return;
             }
-                final String token = authHeader.substring(7);
-                final String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
-                if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(phoneNumber);
-                    if (jwtTokenUtil.validateToken(token, userDetails)) {
-                        UsernamePasswordAuthenticationToken authenticationToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails, //tra ve chi tiet nguoi dung
-                                        null,
-                                        userDetails.getAuthorities()  //tra ve role
-                                );
-                        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    }
+            final String token = authHeader.substring(7);
+            final String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
+            if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(phoneNumber);
+                if (jwtTokenUtil.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, //tra ve chi tiet nguoi dung
+                                    null,
+                                    userDetails.getAuthorities()  //tra ve role
+                            );
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
+            }
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
@@ -73,11 +73,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     public boolean isByPassToken(@NonNull HttpServletRequest request) {
-
+        //    Với các request này thì sẽ không kiểm tra token nữa
         final List<Pair<String, String>> byPassTokens = Arrays.asList(
                 Pair.of(String.format("%s/products", apiPrefix), "GET"),
                 Pair.of(String.format("%s/roles", apiPrefix), "GET"),
                 Pair.of(String.format("%s/categories", apiPrefix), "GET"),
+                Pair.of(String.format("%s/orders", apiPrefix), "GET"),
                 Pair.of(String.format("%s/users/register", apiPrefix), "POST"),
                 Pair.of(String.format("%s/users/login", apiPrefix), "POST")
         );

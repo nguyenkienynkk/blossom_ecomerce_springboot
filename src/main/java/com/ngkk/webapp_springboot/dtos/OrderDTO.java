@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -54,5 +55,8 @@ public class OrderDTO {
 
     @JsonProperty("payment_method")
     private String paymentMethod;
+
+    @JsonProperty("cart_items")
+    private List<CartItemDTO> cartItems;
 
 }

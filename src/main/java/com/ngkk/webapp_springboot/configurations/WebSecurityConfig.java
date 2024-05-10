@@ -67,7 +67,8 @@ public class WebSecurityConfig {
 
                         .requestMatchers(GET,
                                 String.format("%s/products**", apiPrefix)).permitAll()
-
+                        .requestMatchers(GET,
+                                String.format(ENDPOINT_PRODUCT, apiPrefix)).permitAll()
                         .requestMatchers(GET,
                                 String.format("%s/products/images/*", apiPrefix)).permitAll()
 
@@ -104,10 +105,10 @@ public class WebSecurityConfig {
 
                         .requestMatchers(DELETE,
                                 String.format(ENDPOINT_ORDER_DETAIL, apiPrefix)).hasRole(Role.ADMIN)
-
-
                         .anyRequest().authenticated())
+
                 .csrf(AbstractHttpConfigurer::disable);
+
         http.cors(httpSecurityCorsConfigurer -> {
             CorsConfiguration configuration = new CorsConfiguration();
             configuration.setAllowedOrigins(List.of("*"));

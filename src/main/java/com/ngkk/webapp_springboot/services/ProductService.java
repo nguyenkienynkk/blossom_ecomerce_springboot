@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -113,5 +114,10 @@ public class ProductService implements IProductService {
             throw new DataNotFoundException("You can not upload more than " + ProductImage.MAXIMUM_IMAGES_PER_PRODUCT + " images");
         }
         return productImageRepository.save(newProductImage);
+    }
+
+    @Override
+    public List<Product> findProductsByIds(List<Long> productIds) {
+        return productRepository.findProductsByIds(productIds);
     }
 }

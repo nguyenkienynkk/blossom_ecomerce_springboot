@@ -3,6 +3,7 @@ package com.ngkk.webapp_springboot.controllers;
 import com.ngkk.webapp_springboot.components.LocalizationUtils;
 import com.ngkk.webapp_springboot.dtos.OrderDTO;
 import com.ngkk.webapp_springboot.models.Order;
+import com.ngkk.webapp_springboot.responses.OrderResponse;
 import com.ngkk.webapp_springboot.services.OrderService;
 import com.ngkk.webapp_springboot.utils.MessageKeys;
 import jakarta.validation.Valid;
@@ -54,7 +55,7 @@ public class OrderController {
     public ResponseEntity<?> getOrder(@Valid @PathVariable("id") Long orderId) {
         try {
             Order existingOrder = orderService.getOrder(orderId);
-            return ResponseEntity.ok(existingOrder);
+            return ResponseEntity.ok(OrderResponse.fromOrder(existingOrder));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

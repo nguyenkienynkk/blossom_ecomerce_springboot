@@ -1,13 +1,17 @@
 package com.ngkk.webapp_springboot.models;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +21,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -25,7 +30,7 @@ import java.util.Date;
 @Setter
 @Builder
 @Table(name = "orders")
-public class Order{
+public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +46,7 @@ public class Order{
     @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "phone_number",nullable = false, length = 100)
+    @Column(name = "phone_number", nullable = false, length = 100)
     private String phoneNumber;
 
     @Column(name = "address", length = 100)
@@ -50,7 +55,7 @@ public class Order{
     @Column(name = "note", length = 100)
     private String note;
 
-    @Column(name="order_date")
+    @Column(name = "order_date")
     private Date orderDate;
 
     @Column(name = "status")
@@ -76,6 +81,9 @@ public class Order{
 
     @Column(name = "active")
     private Boolean active;//thuộc về admin
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<OrderDetail> orderDetails;
 
 
 }
