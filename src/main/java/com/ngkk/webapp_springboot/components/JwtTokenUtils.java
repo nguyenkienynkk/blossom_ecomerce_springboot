@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static io.jsonwebtoken.Jwts.*;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -30,8 +32,10 @@ public class JwtTokenUtils {
     public String generateToken(User user) {
         //properties => claims
         Map<String, Object> claims = new HashMap<>();
+        claims.put("phoneNumber",user.getPhoneNumber());
+        claims.put("userId",user.getId());
         try {
-            String token = Jwts.builder()
+            String token = builder()
                     .setClaims(claims)
                     .setSubject(user.getPhoneNumber())
                     .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
@@ -48,7 +52,7 @@ public class JwtTokenUtils {
         return Keys.hmacShaKeyFor(bytes);
     }
     private Claims extractAllClaims(String token) {
-       return Jwts.parserBuilder()
+       return parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
                 .parseClaimsJws(token)
@@ -62,6 +66,9 @@ public class JwtTokenUtils {
     public boolean isTokenExpired(String token) {
         Date expiration = this.extractClaim(token,Claims::getExpiration);
         return expiration.before(new Date());
+    }
+    public String getSubject(String token) {
+        return  extractClaim(token, Claims::getSubject);
     }
     public String extractPhoneNumber(String token) {
         return extractClaim(token,Claims::getSubject);

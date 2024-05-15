@@ -2,8 +2,10 @@ package com.ngkk.webapp_springboot.services;
 
 import com.ngkk.webapp_springboot.components.JwtTokenUtils;
 import com.ngkk.webapp_springboot.components.LocalizationUtils;
+import com.ngkk.webapp_springboot.dtos.UpdateUserDTO;
 import com.ngkk.webapp_springboot.dtos.UserDTO;
 import com.ngkk.webapp_springboot.exceptions.DataNotFoundException;
+import com.ngkk.webapp_springboot.exceptions.ExpiredTokenException;
 import com.ngkk.webapp_springboot.exceptions.PermissionDenyException;
 import com.ngkk.webapp_springboot.models.Role;
 import com.ngkk.webapp_springboot.models.User;
@@ -20,6 +22,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -69,7 +72,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public String login(String phoneNumber, String password,Long roleId) throws Exception {
+    public String login(String phoneNumber, String password, Long roleId) throws Exception {
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
             throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
@@ -81,7 +84,7 @@ public class UserService implements IUserService {
                 existingUser.getAuthorities()
         );
         if (existingUser.getFacebookAccountId() == 0 && existingUser.getGoogleAccountId() == 0) {
-            if(!passwordEncoder.matches(password, existingUser.getPassword())) {
+            if (!passwordEncoder.matches(password, existingUser.getPassword())) {
                 throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
             }
         }
@@ -91,5 +94,61 @@ public class UserService implements IUserService {
         }
         authenticationManager.authenticate(authenticationToken);
         return jwtTokenUtil.generateToken(existingUser);
+    }
+
+    @Override
+    public User getUserDetailsFromToken(String token) throws Exception {
+        if (jwtTokenUtil.isTokenExpired(token)) {
+            throw new ExpiredTokenException("Token is expired");
+        }
+        String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
+        Optional<User> user = userRepository.findByPhoneNumber(phoneNumber);
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            throw new Exception("User not found");
+        }
+
+    }
+
+    @Transactional
+    @Override
+    public User updateUser(Long userId, UpdateUserDTO updatedUserDTO ) throws Exception {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
+        String newPhoneNumber = updatedUserDTO.getPhoneNumber();
+        if (!existingUser.getPhoneNumber().equals(newPhoneNumber) &&
+                userRepository.existsByPhoneNumber(newPhoneNumber)) {
+            throw new DataIntegrityViolationException("Phone number already exitsts");
+        }
+
+        //Update user information based on the DTO
+        //Update user information based on the DTO,only if the DTO field is not null
+        if (updatedUserDTO.getFullName() != null) {
+            existingUser.setFullName(updatedUserDTO.getFullName());
+        }
+        if (newPhoneNumber != null) {
+            existingUser.setPhoneNumber(newPhoneNumber);
+        }
+        if (updatedUserDTO.getAddress() != null) {
+            existingUser.setAddress(updatedUserDTO.getAddress());
+        }
+        if (updatedUserDTO.getDateOfBirth() != null) {
+            existingUser.setDateOfBirth(updatedUserDTO.getDateOfBirth());
+        }
+        if (updatedUserDTO.getGoogleAccountId() > 0) {
+            existingUser.setGoogleAccountId(updatedUserDTO.getGoogleAccountId());
+        }
+        if (updatedUserDTO.getFacebookAccountId() > 0) {
+            existingUser.setFacebookAccountId(updatedUserDTO.getFacebookAccountId());
+        }
+        if(updatedUserDTO.getPassword() != null &&
+                !updatedUserDTO.getPassword().isEmpty()) {
+            String newPassword = updatedUserDTO.getPassword();
+            String encoderPassword = passwordEncoder.encode(newPassword);
+            existingUser.setPassword(encoderPassword);
+        }
+        return userRepository.save(existingUser);
+
     }
 }
