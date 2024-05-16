@@ -144,6 +144,9 @@ public class UserService implements IUserService {
         }
         if(updatedUserDTO.getPassword() != null &&
                 !updatedUserDTO.getPassword().isEmpty()) {
+            if(!updatedUserDTO.getPassword().equals(updatedUserDTO.getRetypePassword())) {
+                throw new DataNotFoundException("Password and retype password not same");
+            }
             String newPassword = updatedUserDTO.getPassword();
             String encoderPassword = passwordEncoder.encode(newPassword);
             existingUser.setPassword(encoderPassword);
