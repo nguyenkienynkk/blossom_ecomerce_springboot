@@ -35,6 +35,9 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.6'
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+
 }
 
 tasks.named('test') {

@@ -15,6 +15,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +57,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @MultipartConfig
 public class ProductController {
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
     IProductService productService;
     LocalizationUtils localizationUtils;
 
@@ -193,6 +196,8 @@ public class ProductController {
 //                Sort.by("createdAt").descending()
                 Sort.by("id").ascending()
         );
+        logger.info(String.format("keyword = %s, category_id = %d, page = %d, limit = %d"
+                , keyword, categoryId, page, limit));
         Page<ProductResponse> productPage = productService.getAllProducts(keyword, categoryId, pageRequest);
         //Trước thì phải chia các thứ lằng ngoằng làm giảm tốc độ xử lý
         int totalPages = productPage.getTotalPages();
