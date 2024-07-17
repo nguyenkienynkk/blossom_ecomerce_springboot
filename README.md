@@ -29,7 +29,3 @@ This project is an e-commerce platform aimed at providing a seamless shopping ex
 ### 5. Search and Filtering
 - **Product Search**: Provide a search functionality for users to find products based on keywords or categories.
 - **Advanced Filters**: Enable users to filter products by price range, brand, ratings, etc., for targeted results.
-- 
-### 6. Responsive Design
-- **Mobile-Friendly**: Ensure the platform is accessible and easy to use on various devices including smartphones and tablets.
-- **Optimized Performance**: Implement caching, lazy loading, and other techniques to enhance page load speeds and user experience.
